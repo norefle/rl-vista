@@ -26,4 +26,6 @@ styles = {
     , "tile/1": "assets/sample/grey.png"
     , "tile/2": "assets/sample/yellow.png"
     , "tile/3": "assets/sample/blue.png"
+
+    , "ui/0": "assets/sample/ui.png"
 }

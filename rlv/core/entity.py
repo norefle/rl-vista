@@ -15,6 +15,9 @@ class Entity(object):
     def set_position(self, position):
         self.position = position
 
+    def get_name(self):
+        return self.name
+
     def get(self, name):
         return self.components.get(name)
 

@@ -11,7 +11,7 @@ python main.py
 
 ## Usage
 
-1. Create even Syste: rlv.core.System
+1. Create event System: rlv.core.System
 1. Register all components
 1. Register engine (see main/Application.__init__)
 1. Create map (basically array of images)
@@ -22,3 +22,6 @@ python main.py
 1. Run the main loop (Engine.get().__next__ or for _ in Engine.get())
 
 That's all
+
+!["Eye candy"](screenshot.png)
+

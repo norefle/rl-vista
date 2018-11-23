@@ -2,12 +2,15 @@ import random
 
 from rlv.core.engine import Engine
 from rlv.core.entity import Entity
+from rlv.core.event import Event
 from rlv.core.component import Component
 from rlv.core.image import Image
+from rlv.core.label import Label
 from rlv.core.system import System
 from rlv.std.actor import Actor
 from rlv.std.components.keyboard import Keyboard
 from rlv.std.components.timer import Timer
+from rlv.std.entities.uiboard import UiBoard
 
 import assets.sample.config as cf
 
@@ -19,6 +22,7 @@ class Application(object):
         self.pipe = System("pipe")
         self.pipe.register("input", Keyboard)
         self.pipe.register("image", Image)
+        self.pipe.register("text", Label)
         self.pipe.register("game", Engine)
         self.pipe.register("timer", Timer)
         self.pipe.register("moveto", MoveTo)
@@ -55,11 +59,12 @@ class MoveTo(Component):
                 x = min(tx, x + delay * speed)
             elif x > tx:
                 x = max(tx, x - delay * speed)
-            elif y < ty:
+            if y < ty:
                 y = min(ty, y + delay * speed)
             elif y > ty:
                 y = max(ty, y - delay * speed)
-            else:
+
+            if x == tx and y == ty:
                 # Done, stop doing whatever we did
                 self.entity.remove("timer")
                 self.entity.remove("moveto")
@@ -93,7 +98,24 @@ class Map(object):
                 entity.add(Engine.get().image(style, entity=entity))
                 self.data.append(entity)
 
+scores = {}
+
 def update(entity, actor, delay, speed):
+    score = scores[actor.get_name()]
+    score["score"] += 1
+    if score["entity"].get("text") is None:
+        score["entity"].add(Engine.get().text(
+            content="%s: %d" % (actor.get_name(), score["score"])
+            , size=20
+            , entity=score["entity"]
+        ))
+    else:
+        Engine.get().emit(Event(
+            "settext"
+            , text="%s: %d" % (actor.get_name(), score["score"])
+            , target=score["entity"].get("text")
+        ))
+
     (x, y) = (random.randint(0, 19) * 64, random.randint(0, 14) * 64)
     style = "entity/%s" % random.randint(0, 11)
 
@@ -116,27 +138,29 @@ def update(entity, actor, delay, speed):
 
 if __name__ == "__main__":
     # Create application with the size of the screen to render to
-    app = Application(width=64 * 20, height=64 * 15)
+    width = 64 * 20
+    height = 64 * 15
+    app = Application(width=width, height=height)
 
     level = Map(
             width=20
             , height=15
             , level=
-            [ 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            , 0, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            , 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            , 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            , 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-            , 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3
-            , 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3
-            , 0, 2, 2, 1, 0, 0, 0, 0, 0, 3, 3, 0, 0, 0, 0, 0, 0, 3, 3, 3
-            , 0, 2, 2, 2, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 2, 3
-            , 0, 2, 2, 0, 0, 0, 0, 0, 0, 3, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3
-            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3
-            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 3
-            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2
-            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2
-            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2
+            [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3
+            , 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3
+            , 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+            , 0, 0, 0, 1, 0, 0, 0, 1, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
+            , 0, 0, 0, 1, 0, 0, 0, 1, 1, 1, 1, 1, 1, 3, 3, 3, 3, 3, 3, 3
+            , 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3
+            , 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3
+            , 0, 2, 2, 1, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 3, 3, 3
+            , 0, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 3, 1, 3, 3, 3, 3, 2, 2, 3
+            , 0, 2, 2, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 3, 3, 3, 2, 2, 3, 3
+            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 1, 1, 1, 1, 1, 1, 1, 1
+            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 3, 3, 2, 2, 2, 3, 3
+            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 3, 2, 2, 2, 2, 3
+            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2
+            , 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 2, 2, 2, 2, 2, 2, 2
             ]
     )
 
@@ -159,8 +183,19 @@ if __name__ == "__main__":
         , speed=0.64
     )
 
+    scores = {
+        "Alice": {
+            "score": 0
+            , "entity": UiBoard("alice-score", (5, height - 105))
+        }
+        , "Bob": {
+            "score": 0
+            , "entity": UiBoard("bob-score", (110, height - 105))
+        }
+    }
+
     update(entity=target_one, actor=alice, delay=16, speed=0.2)
-    update(entity=target_two, actor=bob, delay=20, speed=0.1)
+    update(entity=target_two, actor=bob, delay=16, speed=0.2)
 
     # Main loop, internally calls app.update(df) and then calls app.render()
     i = 0
