@@ -3,7 +3,7 @@ from rlv.core.event import Event
 from rlv.core.component import Component
 
 
-class MoveTo(Component):
+class MoveToTarget(Component):
     def __init__(self, name, parent, target, speed):
         super().__init__(name, parent)
         self.target = target
