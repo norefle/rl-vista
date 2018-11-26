@@ -11,7 +11,7 @@ class UiBoard(Entity):
 
         self.add(Engine.get().image("ui/0", self))
 
-        self.text = Entity("text-border", (position[0] + 15, position[1] + 35))
+        self.text = Entity("text-border", (position[0] + 15, position[1] + 35, position[2]))
         self.text.add(Engine.get().text("", 20, self.text))
 
         self.components["text"] = self.text.get("text")

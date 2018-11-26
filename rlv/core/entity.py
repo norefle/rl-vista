@@ -4,10 +4,12 @@ and basic support for components.
 """
 
 class Entity(object):
-    def __init__(self, name, position=(0, 0)):
+    def __init__(self, name, position=(0, 0, 0)):
         self.name = name
         self.position = position
         self.components = {}
+        if len(position) != 3:
+            raise ValueError("Position should have 3 coordinate.")
 
     def get_position(self):
         return self.position

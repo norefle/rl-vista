@@ -1,4 +1,3 @@
-from rlv.core.engine import Engine
 from rlv.core.component import Component
 
 
@@ -10,6 +9,6 @@ class Image(Component):
         self.screen = surface
 
     def on_render(self, dt):
-        (x, y) = self.entity.get_position()
+        (x, y, z) = self.entity.get_position()
         self.screen.blit(self.image, (x, y))
         return False # Do not prevent other components from rendering

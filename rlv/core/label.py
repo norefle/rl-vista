@@ -18,6 +18,6 @@ class Label(Component):
             return False
 
     def on_render(self, dt):
-        (x, y) = self.entity.get_position()
+        (x, y, z) = self.entity.get_position()
         self.screen.blit(self.text, (x, y))
         return False # Do not prevent other components from rendering

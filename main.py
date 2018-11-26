@@ -3,102 +3,17 @@ import random
 from rlv.core.engine import Engine
 from rlv.core.entity import Entity
 from rlv.core.event import Event
-from rlv.core.component import Component
-from rlv.core.image import Image
-from rlv.core.label import Label
-from rlv.core.system import System
 from rlv.std.actor import Actor
-from rlv.std.components.keyboard import Keyboard
-from rlv.std.components.timer import Timer
 from rlv.std.entities.uiboard import UiBoard
 
-import assets.sample.config as cf
-
-class Application(object):
-    def __init__(self, width, height):
-        self.width = width
-        self.height = height
-
-        self.pipe = System("pipe")
-        self.pipe.register("input", Keyboard)
-        self.pipe.register("image", Image)
-        self.pipe.register("text", Label)
-        self.pipe.register("game", Engine)
-        self.pipe.register("timer", Timer)
-        self.pipe.register("moveto", MoveTo)
-
-        self.engine = self.pipe.create(
-            "game"
-            , pipe=self.pipe
-            , width=self.width
-            , height=self.height
-            , styles=cf.styles
-            , config=cf.config
-        )
-
-    def __iter__(self):
-        return self.engine
-
-class MoveTo(Component):
-    def __init__(self, name, parent, target, speed, callback):
-        super().__init__(name, parent)
-        self.target = target
-        self.speed = speed
-        self.notify = callback
-
-    def on_timeout(self, dt, source):
-        if self.entity == source:
-            if self.entity.get("timer") is None:
-                return True
-
-            (x, y) = self.entity.get_position()
-            (tx, ty) = self.target
-            delay = self.entity.get("timer").delay
-            speed = self.speed
-            if x < tx:
-                x = min(tx, x + delay * speed)
-            elif x > tx:
-                x = max(tx, x - delay * speed)
-            if y < ty:
-                y = min(ty, y + delay * speed)
-            elif y > ty:
-                y = max(ty, y - delay * speed)
-
-            if x == tx and y == ty:
-                # Done, stop doing whatever we did
-                self.entity.remove("timer")
-                self.entity.remove("moveto")
-                self.notify(self.target)
-
-            self.entity.set_position(position=(x, y))
-
-            return True
-        else:
-            return False # Continue
-
-class Map(object):
-    def __init__(self, level, width, height):
-        self.styles = {
-            0: "tile/0"
-            , 1: "tile/1"
-            , 2: "tile/2"
-            , 3: "tile/3"
-        }
-        self.width = width
-        self.height = height
-        self.level = level
-        self.data = []
-
-        for y in range(0, self.height):
-            for x in range(0, self.width):
-                index = y * self.width + x
-                style = self.styles[self.level[index]]
-                
-                entity = Entity("%d:%d" % (x, y), position=(64 * x, 64 * y))
-                entity.add(Engine.get().image(style, entity=entity))
-                self.data.append(entity)
+from app.application import Application
+from app.map import Map
 
 scores = {}
+z_level_back = 0
+z_level_targets = 5
+z_level_actors = 10
+z_level_ui = 15
 
 def update(entity, actor, delay, speed):
     score = scores[actor.get_name()]
@@ -116,12 +31,12 @@ def update(entity, actor, delay, speed):
             , target=score["entity"].get("text")
         ))
 
-    (x, y) = (random.randint(0, 19) * 64, random.randint(0, 14) * 64)
+    (x, y, z) = (random.randint(0, 19) * 64, random.randint(0, 14) * 64, z_level_targets)
     style = "entity/%s" % random.randint(0, 11)
 
     entity.remove("image")
     entity.add(Engine.get().image(style=style, entity=entity))
-    entity.set_position((x, y))
+    entity.set_position((x, y, z))
 
     actor.remove("timer")
     actor.remove("moveto")
@@ -130,7 +45,7 @@ def update(entity, actor, delay, speed):
     actor.add(Engine.get().component(
         "moveto"
         , parent=actor
-        , target=(x, y)
+        , target=(x, y, z_level_actors)
         , speed=speed
         , callback=lambda target: update(entity, actor, delay, speed)
     ))
@@ -165,32 +80,32 @@ if __name__ == "__main__":
     )
 
     # Obstacles, targets, whatever which is not background
-    target_one = Entity(name="Box-1", position=(0, 0))
-    target_two = Entity(name="Box-2", position=(0, 0))
+    target_one = Entity(name="Box-1", position=(0, 0, z_level_targets))
+    target_two = Entity(name="Box-2", position=(0, 0, z_level_targets))
 
     # Define actors here
     alice = Actor(
         name="Alice"
         , style="actor/0"
-        , position=(0, 0)
+        , position=(0, 0, z_level_actors)
         , speed=0.64
     )
 
     bob = Actor(
         name="Bob"
         , style="actor/2"
-        , position=(10, 5)
+        , position=(10, 5, z_level_actors)
         , speed=0.64
     )
 
     scores = {
         "Alice": {
             "score": 0
-            , "entity": UiBoard("alice-score", (5, height - 105))
+            , "entity": UiBoard("alice-score", (5, height - 105, z_level_ui))
         }
         , "Bob": {
             "score": 0
-            , "entity": UiBoard("bob-score", (110, height - 105))
+            , "entity": UiBoard("bob-score", (110, height - 105, z_level_ui))
         }
     }
 

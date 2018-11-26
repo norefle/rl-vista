@@ -24,6 +24,9 @@ class System(object):
         else:
             raise NameError("Invalid component %s" % name)
 
+    def listen(self, component):
+        self.components.append(component)
+
     def emit(self, event):
         self.events.append(event)
 
