@@ -4,6 +4,7 @@ from rlv.core.engine import Engine
 from rlv.core.component import Component
 from rlv.std.components.keyboard import Keyboard
 from rlv.std.components.timer import Timer
+from app.components.collider import Collider
 from app.components.moveto import MoveTo
 
 import assets.sample.config as cf
@@ -30,6 +31,7 @@ class Application(Component):
         self.engine.register("input", Keyboard)
         self.engine.register("timer", Timer)
         self.engine.register("moveto", MoveTo)
+        self.engine.register("collider", Collider)
         self.engine.listen(self)
 
     def on_exit(self, dt):
