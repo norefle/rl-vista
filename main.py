@@ -3,6 +3,8 @@ import random
 from rlv.core.engine import Engine
 from rlv.core.entity import Entity
 from rlv.core.event import Event
+from rlv.core.component import Component
+from rlv.core.event import Event
 from rlv.std.actor import Actor
 from rlv.std.entities.uiboard import UiBoard
 
@@ -45,9 +47,8 @@ def update(entity, actor, delay, speed):
     actor.add(Engine.get().component(
         "moveto"
         , parent=actor
-        , target=(x, y, z_level_actors)
+        , target=entity
         , speed=speed
-        , callback=lambda target: update(entity, actor, delay, speed)
     ))
 
 
@@ -112,11 +113,15 @@ if __name__ == "__main__":
     update(entity=target_one, actor=alice, delay=16, speed=0.2)
     update(entity=target_two, actor=bob, delay=16, speed=0.2)
 
+    collider = Collider("collider")
+    Engine.get().listen(collider)
+
     # Main loop, internally calls app.update(df) and then calls app.render()
-    i = 0
     for _ in app:
-        # Do model updates here
-        i += 1
+        if len(collider.get_collisions()) > 0:
+            for (source, target) in collider.get_collisions():
+                update(entity=target, actor=source, delay=16, speed=0.2)
+            collider.reset()
 
     print("Done")
 
