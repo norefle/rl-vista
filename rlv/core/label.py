@@ -11,7 +11,7 @@ class Label(Component):
         self.screen = surface
     
     def on_settext(self, dt, text, target):
-        if target == self:
+        if target == self.entity:
             self.text = self.font.render(text, True, (0, 0, 0))
             return True
         else:

@@ -1,5 +1,15 @@
 config = {
-    "tile": (64, 64)
+    "tile-size": 64
+    , "z-order": {
+        "background": 0
+        , "target": 5
+        , "actor": 10
+        , "ui": 15
+    }
+    , "actor": {
+        "speed": 0.15
+        , "delay": 16.66
+    }
 }
 
 styles = {

@@ -15,13 +15,12 @@ class Engine(object):
     def get():
         return Engine._instance
 
-    def __init__(self, width, height, styles, config):
+    def __init__(self, width, height, styles):
         Engine._instance = self
 
         self.dt = 0
         self.frames = 0
 
-        self.tile_size = config["tile"]
         self.images = {}
 
         self.events = System("events")
@@ -114,7 +113,7 @@ class Engine(object):
             self.events.emit(Event(
                 "settext"
                 , text="FPS: %d" % self.frames
-                , target=self.fps.get("text")
+                , target=self.fps
             ))
             self.dt = 0
             self.frames = 0

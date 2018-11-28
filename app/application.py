@@ -6,22 +6,28 @@ from rlv.std.components.keyboard import Keyboard
 from rlv.std.components.timer import Timer
 from app.components.collider import Collider
 from app.components.movetotarget import MoveToTarget
+from app.components.movetoxy import MoveToXY
+from app.map import Map
 
-import assets.sample.config as cf
+import app.config as cf
 
 
 class Application(Component):
-    def __init__(self, width, height):
+    def __init__(self, width, height, done_callback):
         super().__init__("app", None)
 
-        self.width = width
-        self.height = height
+        scale = cf.config["tile-size"]
+        self.width = width * scale
+        self.height = height * scale
+        self.callback = done_callback
+        self.map = None
+        self.actors = {}
+        self.targets = {}
 
         self.engine = Engine(
             width=self.width
             , height=self.height
             , styles=cf.styles
-            , config=cf.config
         )
 
         self.done = False
@@ -31,8 +37,43 @@ class Application(Component):
         self.engine.register("input", Keyboard)
         self.engine.register("timer", Timer)
         self.engine.register("moveto", MoveToTarget)
+        self.engine.register("movetoxy", MoveToXY)
         self.engine.register("collider", Collider)
         self.engine.listen(self)
+
+    def set_map(self, width, height, level):
+        if self.map is not None:
+            # Drop map here
+            self.map = None
+
+        self.map = Map(width=width, height=height, level=level)
+
+    def add_actor(self, actor):
+        self.actors[actor.get_name()] = actor
+
+    def get_actor(self, name):
+        return self.actors[name]
+
+    def add_target(self, target):
+        self.targets[target.get_name()] = target
+
+    def get_target(self, name):
+        return self.targets[name]
+
+    def drop_target(self, name):
+        target = self.targets.get(name)
+        if target is not None:
+            for key in target.components.keys():
+                target.get(key).kill()
+            del self.targets[name]
+
+    def on_timeout(self, dt, source):
+        self.on_done(dt, source, "timeout")
+        return False
+
+    def on_done(self, dt, source, action):
+        self.callback(source=source, action=action)
+        return True
 
     def on_exit(self, dt):
         self.done = True

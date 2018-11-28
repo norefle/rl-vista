@@ -1,66 +1,44 @@
 import random
 
 from rlv.core.engine import Engine
+from rlv.core.component import Component
+
 from rlv.core.entity import Entity
 from rlv.core.event import Event
 
 from app.application import Application
 
 from app.actor import Actor
-from app.map import Map
+from app.goal import Goal
 from app.uiboard import UiBoard
 
-scores = {}
-z_level_back = 0
-z_level_targets = 5
-z_level_actors = 10
-z_level_ui = 15
+class State(object):
+    def __init__(self):
+        self.last = "INIT"
+        self.all = [self.last]
 
-def update(entity, actor, delay, speed):
-    score = scores[actor.get_name()]
-    score["score"] += 1
-    if score["entity"].get("text") is None:
-        score["entity"].add(Engine.get().text(
-            content="%s: %d" % (actor.get_name(), score["score"])
-            , size=20
-            , entity=score["entity"]
-        ))
-    else:
-        Engine.get().emit(Event(
-            "settext"
-            , text="%s: %d" % (actor.get_name(), score["score"])
-            , target=score["entity"].get("text")
-        ))
-
-    (x, y, z) = (random.randint(0, 19) * 64, random.randint(0, 14) * 64, z_level_targets)
-    style = "entity/%s" % random.randint(0, 11)
-
-    entity.remove("image")
-    entity.add(Engine.get().image(style=style, entity=entity))
-    entity.set_position((x, y, z))
-
-    actor.remove("timer")
-    actor.remove("moveto")
-
-    actor.add(Engine.get().component("timer", parent=actor, delay=delay))
-    actor.add(Engine.get().component(
-        "moveto"
-        , parent=actor
-        , target=entity
-        , speed=speed
-    ))
+    def on_done(self, source, action):
+        last = "%s:%s" % (source.get_name(), action)
+        self.all.append(last)
+        self.last = last
 
 
 if __name__ == "__main__":
     # Create application with the size of the screen to render to
-    width = 64 * 20
-    height = 64 * 15
-    app = Application(width=width, height=height)
+    width = 20
+    height = 15
 
-    level = Map(
-            width=20
-            , height=15
-            , level=
+    state = State()
+    app = Application(
+        width=width
+        , height=height
+        , done_callback=lambda source, action: state.on_done(source, action)
+    )
+
+    app.set_map(
+        width=width
+        , height=height
+        , level=
             [ 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3
             , 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3
             , 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 3, 3, 3, 3, 3, 3, 3, 3, 3, 3
@@ -79,47 +57,52 @@ if __name__ == "__main__":
             ]
     )
 
-    # Obstacles, targets, whatever which is not background
-    target_one = Entity(name="Box-1", position=(0, 0, z_level_targets))
-    target_two = Entity(name="Box-2", position=(0, 0, z_level_targets))
+    app.add_actor(Actor("Alice", x=0, y=0, style="actor/0"))
+    app.add_actor(Actor("Bob", x=3, y=3, style="actor/2"))
 
-    # Define actors here
-    alice = Actor(
-        name="Alice"
-        , style="actor/0"
-        , position=(0, 0, z_level_actors)
-        , speed=0.64
-    )
+    app.add_target(Goal("tree-1", x=10, y=10, style="entity/10"))
+    app.add_target(Goal("tree-2", x=5, y=14, style="entity/10"))
+    app.add_target(Goal("tree-3", x=18, y=2, style="entity/10"))
+    app.add_target(Goal("tree-4", x=1, y=6, style="entity/10"))
+    app.add_target(Goal("tree-5", x=7, y=3, style="entity/10"))
 
-    bob = Actor(
-        name="Bob"
-        , style="actor/2"
-        , position=(10, 5, z_level_actors)
-        , speed=0.64
-    )
+    msg = UiBoard("Chat", 0, 13)
 
-    scores = {
-        "Alice": {
-            "score": 0
-            , "entity": UiBoard("alice-score", (5, height - 105, z_level_ui))
-        }
-        , "Bob": {
-            "score": 0
-            , "entity": UiBoard("bob-score", (110, height - 105, z_level_ui))
-        }
-    }
+    clock = Entity("BobClock", (0, 0, 0))
+    clock.add(Engine.get().component("timer", delay=5000, parent=clock)) # 5 seconds
+    goal_clock = Entity("GoalClock", (0, 0, 0))
+    goal_clock.add(Engine.get().component("timer", delay=1000, parent=goal_clock))
 
-    update(entity=target_one, actor=alice, delay=16, speed=0.2)
-    update(entity=target_two, actor=bob, delay=16, speed=0.2)
-
-    collider = Engine.get().component("collider")
-
-    # Main loop, internally calls app.update(df) and then calls app.render()
+    i = 0
     for _ in app:
-        if len(collider.get_collisions()) > 0:
-            for (source, target) in collider.get_collisions():
-                update(entity=target, actor=source, delay=16, speed=0.2)
-            collider.reset()
+        (ax, ay) = (random.randint(0, width - 1), random.randint(0, height - 1))
+        (bx, by) = (random.randint(0, width - 1), random.randint(0, height - 1))
+        if state.last == "INIT":
+            i += 1
+            msg.add_message("%d Alice: going to (%d, %d)" % (i, ax, ay))
+            app.get_actor("Alice").move_to(x=ax, y=ay)
+            msg.add_message("%d Bob: jumping to (%d, %d)" % (i, bx, by))
+            app.get_actor("Bob").jump_to(x=bx, y=by)
+        for last in state.all:
+            if last == "Alice:move":
+                i += 1
+                msg.add_message("%d Alice: moving to (%d, %d)" % (i, ax, ay))
+                app.get_actor("Alice").move_to(x=ax, y=ay)
+            elif last == "BobClock:timeout":
+                i += 1
+                msg.add_message("%d Bob: jumping to (%d, %d)" % (i, bx, by))
+                app.get_actor("Bob").jump_to(x=bx, y=by)
+            elif last == "GoalClock:timeout":
+                app.drop_target("random")
+                app.add_target(Goal(
+                    "random"
+                    , x=random.randint(0, width - 1)
+                    , y=random.randint(0, height -1)
+                    , style="entity/%d" % random.randint(0, 11)
+                ))
+
+        state.last = None
+        state.all = []
 
     print("Done")
 
