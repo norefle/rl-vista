@@ -14,13 +14,11 @@ from app.uiboard import UiBoard
 
 class State(object):
     def __init__(self):
-        self.last = "INIT"
-        self.all = [self.last]
+        self.all = ["INIT"]
 
     def on_done(self, source, action):
         last = "%s:%s" % (source.get_name(), action)
         self.all.append(last)
-        self.last = last
 
 
 if __name__ == "__main__":
@@ -77,13 +75,14 @@ if __name__ == "__main__":
     for _ in app:
         (ax, ay) = (random.randint(0, width - 1), random.randint(0, height - 1))
         (bx, by) = (random.randint(0, width - 1), random.randint(0, height - 1))
-        if state.last == "INIT":
-            i += 1
-            msg.add_message("%d Alice: going to (%d, %d)" % (i, ax, ay))
-            app.get_actor("Alice").move_to(x=ax, y=ay)
-            msg.add_message("%d Bob: jumping to (%d, %d)" % (i, bx, by))
-            app.get_actor("Bob").jump_to(x=bx, y=by)
         for last in state.all:
+            if last == "INIT":
+                i += 1
+                msg.add_message("%d Alice: going to (%d, %d)" % (i, ax, ay))
+                app.get_actor("Alice").move_to(x=ax, y=ay)
+                i += 1
+                msg.add_message("%d Bob: jumping to (%d, %d)" % (i, bx, by))
+                app.get_actor("Bob").jump_to(x=bx, y=by)
             if last == "Alice:move":
                 i += 1
                 msg.add_message("%d Alice: moving to (%d, %d)" % (i, ax, ay))
