@@ -3,11 +3,12 @@ import random
 from rlv.core.engine import Engine
 from rlv.core.entity import Entity
 from rlv.core.event import Event
-from rlv.std.actor import Actor
-from rlv.std.entities.uiboard import UiBoard
 
 from app.application import Application
+
+from app.actor import Actor
 from app.map import Map
+from app.uiboard import UiBoard
 
 scores = {}
 z_level_back = 0
