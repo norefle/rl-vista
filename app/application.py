@@ -13,7 +13,7 @@ import app.config as cf
 
 
 class Application(Component):
-    def __init__(self, width, height, done_callback):
+    def __init__(self, width, height, screen_width, screen_height, done_callback):
         super().__init__("app", None)
 
         scale = cf.config["tile-size"]
@@ -27,6 +27,8 @@ class Application(Component):
         self.engine = Engine(
             width=self.width
             , height=self.height
+            , viewport_width=screen_width
+            , viewport_height=screen_height
             , styles=cf.styles
         )
 

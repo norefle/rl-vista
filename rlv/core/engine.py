@@ -15,7 +15,7 @@ class Engine(object):
     def get():
         return Engine._instance
 
-    def __init__(self, width, height, styles):
+    def __init__(self, width, height, viewport_width, viewport_height, styles):
         Engine._instance = self
 
         self.dt = 0
@@ -32,7 +32,10 @@ class Engine(object):
         pygame.init()
         pygame.font.init()
 
-        self.screen = pygame.display.set_mode((width, height))
+        self.width = viewport_width
+        self.height = viewport_height
+        self.surface = pygame.Surface((width, height))
+        self.screen = pygame.display.set_mode((viewport_width, viewport_height))
 
         for k, v in styles.items():
             self.images[k] = pygame.image.load(v)
@@ -50,7 +53,7 @@ class Engine(object):
             "image"
             , parent=entity
             , data=self.images[style]
-            , surface=self.screen
+            , surface=self.surface
         )
 
         # hack
@@ -64,7 +67,7 @@ class Engine(object):
                 , parent=entity
                 , text=content
                 , size=size
-                , surface=self.screen
+                , surface=self.surface
         )
         self.draws.listen(result)
         # hack
@@ -82,6 +85,8 @@ class Engine(object):
         self._update_fps(dt)
         self.draws.emit(Event("render"))
         self.draws.pump(dt)
+
+        pygame.transform.scale(self.surface, (self.width, self.height), self.screen)
         pygame.display.flip()
 
     def update(self, dt):
