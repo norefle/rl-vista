@@ -4,12 +4,12 @@ from rlv.core.engine import Engine
 from rlv.core.component import Component
 from rlv.std.components.keyboard import Keyboard
 from rlv.std.components.timer import Timer
-from app.components.collider import Collider
-from app.components.movetotarget import MoveToTarget
-from app.components.movetoxy import MoveToXY
-from app.map import Map
+from components.collider import Collider
+from components.movetotarget import MoveToTarget
+from components.movetoxy import MoveToXY
+from map import Map
 
-import app.config as cf
+import config as cf
 
 
 class Application(Component):
@@ -25,11 +25,11 @@ class Application(Component):
         self.targets = {}
 
         self.engine = Engine(
-            width=self.width
-            , height=self.height
-            , viewport_width=screen_width
-            , viewport_height=screen_height
-            , styles=cf.styles
+            width=self.width,
+            height=self.height,
+            viewport_width=screen_width,
+            viewport_height=screen_height,
+            styles=cf.styles,
         )
 
         self.done = False
@@ -104,4 +104,3 @@ class Application(Component):
     @staticmethod
     def now():
         return int(datetime.datetime.utcnow().timestamp() * 1000)
-

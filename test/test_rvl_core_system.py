@@ -10,7 +10,7 @@ class MockComponent(Component):
         super().__init__(name, None)
         self.value = value
 
-    def on_update(self, df, key, value):
+    def on_update(self, dt, key, value):
         self.value = "%s -> %s" % (key, value)
         return True
 
@@ -55,4 +55,3 @@ def test_pump_should_pass_event_to_component():
     system.pump(0)
 
     assert actual.value == "ABC -> DEF"
-

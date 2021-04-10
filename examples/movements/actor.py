@@ -3,7 +3,7 @@ from rlv.core.entity import Entity
 from rlv.core.component import Component
 from rlv.core.event import Event
 
-from app.config import config as cf
+from config import config as cf
 
 
 class Actor(Entity, Component):
@@ -18,14 +18,18 @@ class Actor(Entity, Component):
 
     def move_to(self, x, y):
         scale = cf["tile-size"]
-        self.add(Engine.get().component("timer", parent=self, delay=cf["actor"]["delay"]))
-        self.add(Engine.get().component(
-            "movetoxy"
-            , parent=self
-            , x=x * scale
-            , y=y * scale
-            , speed=cf["actor"]["speed"]
-        ))
+        self.add(
+            Engine.get().component("timer", parent=self, delay=cf["actor"]["delay"])
+        )
+        self.add(
+            Engine.get().component(
+                "movetoxy",
+                parent=self,
+                x=x * scale,
+                y=y * scale,
+                speed=cf["actor"]["speed"],
+            )
+        )
 
     def jump_to(self, x, y):
         scale = cf["tile-size"]
@@ -47,4 +51,3 @@ class Actor(Entity, Component):
         Engine.get().emit(Event("done", source=self, action="move"))
 
         return True
-

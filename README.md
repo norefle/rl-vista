@@ -5,8 +5,8 @@ PyGame visualizer for Reinforcement Learning
 ## Run
 
 ````
-pip install pygame --user
-python main.py
+PYTHONPATH=. poetry run python examples/movements/main.py
+poetry run python examples/movements/main.py
 ````
 
 ## Usage
@@ -23,5 +23,5 @@ python main.py
 
 That's all
 
-!["Eye candy"](screenshot.png)
+!["Eye candy"](examples/movements/screenshot.png)
 

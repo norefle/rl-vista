@@ -1,7 +1,7 @@
 from rlv.core.engine import Engine
 from rlv.core.entity import Entity
 from rlv.core.image import Image
-from app.config import config as cf
+from config import config as cf
 
 
 class Goal(Entity):
@@ -12,4 +12,3 @@ class Goal(Entity):
 
     def destroy(self):
         self.remove("image")
-
