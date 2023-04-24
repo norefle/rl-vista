@@ -4,10 +4,9 @@ PyGame visualizer for Reinforcement Learning
 
 ## Run
 
-````
+```sh
 PYTHONPATH=. poetry run python examples/movements/main.py
-poetry run python examples/movements/main.py
-````
+```
 
 ## Usage
 

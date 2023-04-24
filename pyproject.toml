@@ -6,12 +6,12 @@ authors = ["Dim L. Feiron <norefle@outlook.com>"]
 license = "MIT"
 
 [tool.poetry.dependencies]
-python = "^3.8"
-pygame = "^2.0.1"
+python = "^3.11"
+pygame = "^2.3.0"
 
 [tool.poetry.dev-dependencies]
-pytest = "^6.2.3"
-black = "^21.12b0"
+pytest = "^7.3.1"
+black = "^23.3.0"
 
 [build-system]
 requires = ["poetry-core>=1.0.0"]
