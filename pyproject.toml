@@ -10,7 +10,7 @@ python = "^3.11"
 pygame = "^2.5.2"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^8.2.1"
+pytest = ">=8.2.1,<10.0.0"
 black = "^26.3.1"
 
 [build-system]
